@@ -75,7 +75,7 @@ def get_route(hostname):
                     # print(whatReady[0])
 
                     response = pd.DataFrame({'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': 'hostname not returnable',
-                                'Response Code': 0}, index=[ttl])
+                                'Response Code': 'timeout'}, index=[ttl])
 
                     df = pd.concat([df, response])
                     print(df)
