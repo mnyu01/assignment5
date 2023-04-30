@@ -74,8 +74,8 @@ def get_route(hostname):
                 if whatReady[0] == []:  # Timeout
 
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
-                    response = pd.DataFrame({'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': 'timeout', 'Hostname': 'timeout',
-                                'Response Code': 'timeout'}, index=[1])
+                    response = pd.DataFrame({'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
+                                'Response Code': 0}, index=[1])
                     df = pd.concat([df, response])
                     print(df)
                 recvPacket, addr = mySocket.recvfrom(1024)
