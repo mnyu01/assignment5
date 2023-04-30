@@ -13,12 +13,8 @@ TIMEOUT = 2.0
 TRIES = 1
 
 
-# The packet that we shall send to each router along the path is the ICMP echo
-# request packet, which is exactly what we had used in the ICMP ping exercise.
-# We shall use the same packet that we built in the Ping exercise
-
 def checksum(string):
-    # In this function we make the checksum of our packet
+
     csum = 0
     countTo = (len(string) // 2) * 2
     count = 0
@@ -42,18 +38,15 @@ def checksum(string):
 
 
 def build_packet():
-    # Fill in start
-    # In the sendOnePing() method of the ICMP Ping exercise ,firstly the header of our
-    # packet to be sent was made, secondly the checksum was appended to the header and
-    # then finally the complete packet was sent to the destination.
 
-    # Make the header in a similar way to the ping exercise.
-    # Append checksum to the header.
-
-    # Don’t send the packet yet , just return the final packet in this function.
-    # Fill in end
     C_S = 0
-    # So the function ending should look like this
+
+    if sys.platform == 'darwin':
+
+        C_S = htons(C_S) & 0xffff
+    else:
+        C_S = htons(C_S)
+
     header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, C_S, MAX_HOPS, TRIES)
     data = struct.pack("d", time.time())
     packet = header + data
@@ -67,10 +60,6 @@ def get_route(hostname):
 
     for ttl in range(1, MAX_HOPS):
         for tries in range(TRIES):
-
-            # Fill in start
-            # Make a raw socket named mySocket
-            # Fill in end
             mySocket = socket(AF_INET, SOCK_RAW, ICMP_ECHO_REQUEST)
             mySocket.setsockopt(IPPROTO_IP, IP_TTL, struct.pack('I', ttl))
             mySocket.settimeout(TIMEOUT)
@@ -80,43 +69,49 @@ def get_route(hostname):
                 t = time.time()
                 startedSelect = time.time()
                 whatReady = select.select([mySocket], [], [], timeLeft)
+                # print(whatReady)
                 howLongInSelect = (time.time() - startedSelect)
                 if whatReady[0] == []:  # Timeout
-                    # Fill in start
-                    response = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
-                    datadict = {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
-                                'Response Code': response}
-                    response = response.append(datadict, ignore_index=True)
-                    # append response to your dataframe including hop #, try #, and "timeout" responses as required by the acceptance criteria
+
+                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+                    response = pd.DataFrame({'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': 'timeout', 'Hostname': 'timeout',
+                                'Response Code': 'timeout'}, index=[1])
+                    df = pd.concat([df, response])
                     print(df)
-                    # Fill in end
                 recvPacket, addr = mySocket.recvfrom(1024)
+                print(recvPacket, addr)
                 timeReceived = time.time()
                 timeLeft = timeLeft - howLongInSelect
                 if timeLeft <= 0:
-                    # Fill in start
-                    response = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
-                    datadict = {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
-                                'Response Code': response}
-                    response = response.append(datadict, ignore_index=True)
-                    # append response to your dataframe including hop #, try #, and "timeout" responses as required by the acceptance criteria
+                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+                    response = pd.DataFrame(
+                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': addr, 'Hostname': 'timeout', 'Response Code': 'timeout'}, index=[2])
+                    df = pd.concat([df, response])
                     print(df)
-                    # Fill in end
+
             except Exception as e:
                 print(e)  # uncomment to view exceptions
                 continue
 
             else:
-                # Fill in start
-                # Fetch the icmp type from the IP packet
-                # Fill in end
+
                 try:  # try to fetch the hostname of the router that returned the packet - don't confuse with the hostname that you are tracing
                     # Fill in start
                     icmp = recvPacket[20:28]
+                    # print(icmp)
+                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+                    response = pd.DataFrame(
+                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': 'timeout', 'Hostname': icmp,
+                         'Response Code': response}, index=[3])
+                    df = pd.concat([df, response])
                     # Fill in end
                 except error:  # if the router host does not provide a hostname use "hostname not returnable"
                     # Fill in start
-                    print("hostname not returnable")
+                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+                    response = pd.DataFrame(
+                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': 'timeout', 'Hostname': 'hostname not returnable',
+                         'Response Code': response}, index=[4])
+                    df = pd.concat([df, response])
                     # Fill in end
 
                 if type == 11:
@@ -125,6 +120,11 @@ def get_route(hostname):
                     # Fill in start
                     rtt = timeReceived - timeSent
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+                    response = pd.DataFrame(
+                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
+                         'Response Code': type}, index=[5])
+                    df = pd.concat([df, response])
+                    print(df)
                     # You should update your dataframe with the required column field responses here
                     # Fill in end
                 elif type == 3:
@@ -133,6 +133,11 @@ def get_route(hostname):
                     # Fill in start
                     rtt = timeReceived - timeSent
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+                    response = pd.DataFrame(
+                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
+                         'Response Code': type}, index=[6])
+                    df = pd.concat([df, response])
+                    print(df)
                     # You should update your dataframe with the required column field responses here
                     # Fill in end
                 elif type == 0:
@@ -141,6 +146,11 @@ def get_route(hostname):
                     # Fill in start
                     rtt = timeReceived - timeSent
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+                    response = pd.DataFrame(
+                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
+                         'Response Code': type}, index=[7])
+                    df = pd.concat([df, response])
+                    print(df)
                     # You should update your dataframe with the required column field responses here
                     # Fill in end
                     return df
@@ -149,9 +159,9 @@ def get_route(hostname):
                     print('DataFrame extension!')
                     # If there is an exception/error to your if statements, you should append that to your df here
                     # Fill in end
-                break
+                    break
     return df
 
 
 if __name__ == '__main__':
-    get_route("google.co.il")
+    get_route("google.com")
