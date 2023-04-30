@@ -42,7 +42,6 @@ def build_packet():
     C_S = 0
 
     if sys.platform == 'darwin':
-
         C_S = htons(C_S) & 0xffff
     else:
         C_S = htons(C_S)
@@ -65,6 +64,7 @@ def get_route(hostname):
             mySocket.settimeout(TIMEOUT)
             try:
                 d = build_packet()
+
                 mySocket.sendto(d, (hostname, 0))
                 t = time.time()
                 startedSelect = time.time()
@@ -73,20 +73,19 @@ def get_route(hostname):
                 howLongInSelect = (time.time() - startedSelect)
                 if whatReady[0] == []:  # Timeout
                     # print(whatReady[0])
-                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+
                     response = pd.DataFrame({'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
-                                'Response Code': 'timeout'}, index=[ttl])
-                df = pd.concat([df, response])
-                print(df)
+                                'Response Code': 11}, index=[ttl])
+
+                    df = pd.concat([df, response])
+                    print(df)
                 recvPacket, addr = mySocket.recvfrom(1024)
-                print(mySocket)
-                print(recvPacket)
-                print(addr)
                 timeReceived = time.time()
                 timeLeft = timeLeft - howLongInSelect
+
                 if timeLeft <= 0:
-                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
-                    response = pd.DataFrame({'Hop Count': ttl, 'Try': ttl, 'IP': 'timeout', 'Hostname': 'timeout',
+
+                    response = pd.DataFrame({'Hop Count': ttl, 'Try': ttl, 'IP': destAddr, 'Hostname': hostname,
                                              'Response Code': 0}, index=[ttl])
                     df = pd.concat([df, response])
                     print(df)
@@ -101,7 +100,7 @@ def get_route(hostname):
                     # Fill in start
                     icmp = recvPacket[20:28]
                     # print(icmp)
-                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+
                     response = pd.DataFrame({'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
                                              'Response Code': 0}, index=[ttl])
                     df = pd.concat([df, response])
@@ -109,7 +108,7 @@ def get_route(hostname):
                     # Fill in end
                 except error:  # if the router host does not provide a hostname use "hostname not returnable"
                     # Fill in start
-                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+
                     response = pd.DataFrame(
                         {'Hop Count': ttl, 'Try': TRIES, 'IP': 'timeout', 'Hostname': 'hostname not returnable',
                          'Response Code': 0}, index=[ttl])
@@ -121,7 +120,7 @@ def get_route(hostname):
                     timeSent = struct.unpack("d", recvPacket[28:28 + bytes])[0]
                     # Fill in start
                     rtt = timeReceived - timeSent
-                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+
                     response = pd.DataFrame(
                         {'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
                          'Response Code': 11}, index=[ttl])
@@ -147,7 +146,7 @@ def get_route(hostname):
                     timeSent = struct.unpack("d", recvPacket[28:28 + bytes])[0]
                     # Fill in start
                     rtt = timeReceived - timeSent
-                    df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
+
                     response = pd.DataFrame(
                         {'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
                          'Response Code': type}, index=[ttl])
