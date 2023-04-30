@@ -74,7 +74,7 @@ def get_route(hostname):
                 if whatReady[0] == []:  # Timeout
                     # print(whatReady[0])
 
-                    response = pd.DataFrame({'Hop Count': ttl, 'Try': TRIES, 'IP': 'timeout', 'Hostname': 'hostname not returnable',
+                    response = pd.DataFrame({'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': 'hostname not returnable',
                                 'Response Code': 0}, index=[ttl])
 
                     df = pd.concat([df, response])
@@ -99,7 +99,8 @@ def get_route(hostname):
                 try:  # try to fetch the hostname of the router that returned the packet - don't confuse with the hostname that you are tracing
                     # Fill in start
 
-                    print(mySocket.recvfrom(1024))
+                    icmph = recvPacket[20:28]
+
 
 
 
