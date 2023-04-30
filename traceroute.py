@@ -74,8 +74,8 @@ def get_route(hostname):
                 if whatReady[0] == []:  # Timeout
 
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
-                    response = pd.DataFrame({'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
-                                'Response Code': 0}, index=[1])
+                    response = pd.DataFrame({'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
+                                'Response Code': 11}, index=[1])
                     df = pd.concat([df, response])
                     print(df)
                 recvPacket, addr = mySocket.recvfrom(1024)
@@ -84,8 +84,8 @@ def get_route(hostname):
                 timeLeft = timeLeft - howLongInSelect
                 if timeLeft <= 0:
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
-                    response = pd.DataFrame(
-                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': addr, 'Hostname': 'timeout', 'Response Code': 'timeout'}, index=[2])
+                    response = pd.DataFrame({'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
+                                             'Response Code': 11}, index=[1])
                     df = pd.concat([df, response])
                     print(df)
 
@@ -101,16 +101,16 @@ def get_route(hostname):
                     # print(icmp)
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
                     response = pd.DataFrame(
-                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': 'timeout', 'Hostname': icmp,
-                         'Response Code': response}, index=[3])
+                        {'Hop Count': ttl, 'Try': TRIES, 'IP': 'timeout', 'Hostname': icmp,
+                         'Response Code': 0}, index=[1])
                     df = pd.concat([df, response])
                     # Fill in end
                 except error:  # if the router host does not provide a hostname use "hostname not returnable"
                     # Fill in start
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
                     response = pd.DataFrame(
-                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': 'timeout', 'Hostname': 'hostname not returnable',
-                         'Response Code': response}, index=[4])
+                        {'Hop Count': ttl, 'Try': TRIES, 'IP': 'timeout', 'Hostname': 'hostname not returnable',
+                         'Response Code': 0}, index=[1])
                     df = pd.concat([df, response])
                     # Fill in end
 
@@ -121,8 +121,8 @@ def get_route(hostname):
                     rtt = timeReceived - timeSent
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
                     response = pd.DataFrame(
-                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
-                         'Response Code': type}, index=[5])
+                        {'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
+                         'Response Code': 11}, index=[2])
                     df = pd.concat([df, response])
                     print(df)
                     # You should update your dataframe with the required column field responses here
@@ -134,8 +134,8 @@ def get_route(hostname):
                     rtt = timeReceived - timeSent
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
                     response = pd.DataFrame(
-                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
-                         'Response Code': type}, index=[6])
+                        {'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
+                         'Response Code': 3}, index=[2])
                     df = pd.concat([df, response])
                     print(df)
                     # You should update your dataframe with the required column field responses here
@@ -147,9 +147,9 @@ def get_route(hostname):
                     rtt = timeReceived - timeSent
                     df = pd.DataFrame(columns=['Hop Count', 'Try', 'IP', 'Hostname', 'Response Code'])
                     response = pd.DataFrame(
-                        {'Hop Count': MAX_HOPS, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
-                         'Response Code': type}, index=[7])
-                    df = pd.concat([df, response])
+                        {'Hop Count': ttl, 'Try': TRIES, 'IP': destAddr, 'Hostname': hostname,
+                         'Response Code': type}, index=[2])
+                    df = pd.concat([df, 0])
                     print(df)
                     # You should update your dataframe with the required column field responses here
                     # Fill in end
@@ -164,4 +164,4 @@ def get_route(hostname):
 
 
 if __name__ == '__main__':
-    get_route("google.com")
+    get_route("google.co.il")
